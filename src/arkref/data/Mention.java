@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import MedArkRef.MedArkFilter;
+import MetamapStuff.MetaMapWrapper;
 import arkref.ace.AceDocument;
 import arkref.analysis.Types;
 import arkref.parsestuff.AnalysisUtilities;
@@ -14,6 +16,7 @@ import edu.stanford.nlp.trees.tregex.TregexPattern;
 import edu.stanford.nlp.trees.tregex.tsurgeon.Tsurgeon;
 import edu.stanford.nlp.trees.tregex.tsurgeon.TsurgeonPattern;
 import edu.stanford.nlp.util.Pair;
+import gov.nih.nlm.nls.metamap.*;
 
 public class Mention implements Serializable{
 	private static final long serialVersionUID = 3218834840031746390L;
@@ -21,9 +24,53 @@ public class Mention implements Serializable{
 	private Sentence sentence;
 	private int id;
 	public AceDocument.Mention aceMention;  // for convenience
+	public boolean medRepNP = false;
+	public String medNPSem = "null";
+	public String nodeText = "null";
 	
-	public Mention(int id, Sentence sentence, Tree node) { this.id=id; this.sentence=sentence; this.node=node; }
-	
+	public Mention(int id, Sentence sentence, Tree node, MetaMapWrapper mmw) {
+		this.id=id;
+		this.sentence=sentence;
+		this.node=node;
+
+		nodeText = node.yield().toString();
+		getMMSense(mmw,nodeText);
+	}
+
+
+	public void getMMSense(MetaMapWrapper mmw, String input) {
+		input = input.replaceAll("\\.", "");
+		try {
+			List<Result> results = mmw.parseString(input);
+			for (Result result : results) {
+				for (Utterance utterance : result.getUtteranceList()) {
+					for (PCM pcm : utterance.getPCMList()) {
+						for (Mapping map : pcm.getMappingList()) {
+							for (Ev ev : map.getEvList()) {
+								for(String semType: ev.getSemanticTypes()) {
+									String subject = pcm.getPhrase().getPhraseText();
+									String CUI = ev.getConceptId();
+									if(MedArkFilter.repSems.indexOf(semType)>-1){
+										medNPSem = semType;
+										//System.out.println(subject+":"+CUI);
+										if(MedArkFilter.RNPCUIs.containsKey(CUI)){
+											medRepNP = true;
+											//System.out.println("replacable: "+subject);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}catch(Exception e){
+			System.out.println("MM Rejected in correferencer");
+			//return input;
+		}
+		//return outputString;
+	}
+
 	public String neType() {
 		// using head word strongly outperforms using right-most
 		//List<Tree> leaves = node.getLeaves();

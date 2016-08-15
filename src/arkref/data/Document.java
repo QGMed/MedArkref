@@ -3,6 +3,7 @@ package arkref.data;
 import java.util.*;
 import java.io.*;
 
+import MetamapStuff.MetaMapWrapper;
 import com.aliasi.util.Math;
 
 import arkref.analysis.ARKref;
@@ -26,11 +27,12 @@ import edu.stanford.nlp.util.StringUtils;
 public class Document implements Serializable{
 	private static final long serialVersionUID = 55739275200700333L;
 	private ArrayList<Sentence> sentences;
-	private ArrayList<Mention> mentions;
-	public NodeHashMap<Mention> node2mention;
-	private RefGraph refGraph;
-	private Tree docTree = null; //tree that includes all the trees for the sentences, in order, under a dummy node	
-	private EntityGraph entGraph;
+	protected ArrayList<Mention> mentions;
+	protected NodeHashMap<Mention> node2mention;
+	protected RefGraph refGraph;
+	protected Tree docTree = null; //tree that includes all the trees for the sentences, in order, under a dummy node
+	protected EntityGraph entGraph;
+	public MetaMapWrapper mmw;
 
 
 	public Document() {
@@ -41,12 +43,13 @@ public class Document implements Serializable{
 	}
 
 	
-	public Document(List<Tree> trees, List<String> entityStrings) {
+	public Document(List<Tree> trees, List<String> entityStrings, MetaMapWrapper mmw) {
 		sentences = new ArrayList<Sentence>();
 		mentions = new ArrayList<Mention>();
 		node2mention = new NodeHashMap<Mention>();
 		refGraph = new RefGraph();
-		
+		this.mmw = mmw;
+
 		for(int i=0; i<trees.size(); i++){
 			Sentence sent = new Sentence(i);
 			Tree t = trees.get(i);
@@ -393,7 +396,7 @@ public class Document implements Serializable{
 	}
 
 	public Mention newMention(Sentence s, Tree subtree) {
-		Mention mention = new Mention(mentions.size()+1, s, subtree);
+		Mention mention = new Mention(mentions.size()+1, s, subtree,mmw);
 		mentions.add(mention);
 		if (subtree != null)
 			node2mention.put(s, subtree, mention);

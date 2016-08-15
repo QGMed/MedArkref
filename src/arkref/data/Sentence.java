@@ -47,8 +47,8 @@ public class Sentence implements Serializable {
 	public void setStuff(Tree root, String neTagging, boolean parseSuccess) {
 		this.setRootNode(root);
 		//String[] neTaggedWords = neTagging.split(" ");
-		
-		//simple whitespace splitting doesn't always work 
+
+		//simple whitespace splitting doesn't always work
 		//because of the way PTB tokenizes e.g., 16 2/3 as a single token.
 		//PTB sucks.
 		List<String> neTaggedWords = new ArrayList<String>();
@@ -57,22 +57,22 @@ public class Sentence implements Serializable {
 		while(m.find()){
 			neTaggedWords.add(m.group(1));
 		}
-		
-		
+
+
 		List<Tree> leaves = root.getLeaves();
 		if ( !(!parseSuccess || neTaggedWords.size() == leaves.size())) {
 			U.pf("WARNING parser and SST tokenizers disagree on length %d vs %d\nPARSER: %s\nSST:     %s\n", leaves.size(), neTaggedWords.size(), leaves, StringUtils.join(neTaggedWords," "));
-		}		
+		}
 //		assert !parseSuccess || neTaggedWords.length == leaves.size();
-		
+
 		for (int i=0; i < neTaggedWords.size(); i++) {
 			Word word = new Word();
 			word.sentence = this;
-			
+
 			String[] parts = neTaggedWords.get(i).split("/");
 			word.setNeTag(parts[parts.length-1]);
 			String sstToken = StringUtils.join(ArrayUtils.subarray(parts, 0, parts.length-1), "/");
-			
+
 			if (parseSuccess) {
 				word.setNode(leaves.get(i));
 //				assert sstToken.equals( word.node().value() ) : String.format("SST and parser tokens disagree: [%s] vs [%s]", word.token, word.node().value());
@@ -86,6 +86,8 @@ public class Sentence implements Serializable {
 
 		}
 	}
+
+
 
 	public Word node2word(Tree node) {
 		String key = nodeKey(node);

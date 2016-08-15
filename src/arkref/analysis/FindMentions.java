@@ -25,7 +25,6 @@ public class FindMentions {
 	
 	public static List<Tree> findMentionNodes(Tree root){
 		List<Tree> res = new ArrayList<Tree>();
-		
 		String patS = "NP !>># NP"; //needs to be the maximum projection of a head word, or a conjunction
 		TregexPattern pat = TregexPatternFactory.getPattern(patS);
 		TregexMatcher matcher = pat.matcher(root);

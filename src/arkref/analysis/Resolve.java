@@ -34,7 +34,12 @@ public class Resolve {
 				U.pl("No parse node, skipping");
 				continue;
 			}
-			if (Types.isPronominal(m)) {
+
+
+
+			if(m.medRepNP){ //is a medically pronominal
+				resolveMedPronoun(m,d);
+			}else if (Types.isPronominal(m)) {
 				resolvePronoun(m, d);
 			//} else if (isRelativePronoun(m)){
 			//	resolveRelativePronoun(m, d);
@@ -261,12 +266,64 @@ public class Resolve {
 		}
 		
 	}
-	
+
+	public static void resolveMedPronoun(Mention mention, Document d){
+		ArrayList<Mention> candidates = new ArrayList<Mention>();
+		for (Mention cand : d.prevMentions(mention)) {
+			boolean match = mention.medNPSem.equals(cand.medNPSem);
+
+			if (cand.node() == null) {
+				match = false;
+			}else if (SyntacticPaths.aIsDominatedByB(mention, cand)){
+				// I-within-I constraint
+				//U.pl("fails A dominates B test");
+				match = false;
+			} else if (!Types.isReflexive(mention) && SyntacticPaths.inSubjectObjectRelationship(cand, mention)){
+				//U.pl("fails reflexive test");
+				match = false;
+			} else if (SyntacticPaths.isSubjectAndMentionInAdjunctPhrase(mention, cand)){
+				//U.pl("fails adjunct test");
+				match = false;
+			}
+
+
+			if (match) {
+				String s="";
+				if (mention.aceMention!=null & cand.aceMention!=null) {
+					boolean gold_match = mention.aceMention.entity==cand.aceMention.entity;
+					s = gold_match ? "[gold RIGHT]" : "[gold WRONG]";
+				}
+//				U.pf("PRONOUN CANDIDATE %s: %20s -> %s\n", s, mention, cand);
+				if(cand.node() != null){
+					candidates.add(cand);
+				}
+			} else {
+//				U.pl("reject mismatch:  " + cand);
+			}
+		}
+		// HACK HACK
+//		if (Types.perspective(mention)==Types.Perspective.Second)
+//			candidates.clear();
+		if (candidates.size() == 0) {
+			U.pl("No legal candidates");
+			d.refGraph().setNullRef(mention);
+		} else if (candidates.size() == 1) {
+			U.pl("Single legal resolution");
+			d.refGraph().setRef(mention, candidates.get(0));
+		} else if (candidates.size() > 1) {
+			U.pl("Finding pronoun antecedent by shortest syntactic path");
+			d.refGraph().setRef(mention, SyntacticPaths.findBestCandidateByShortestPath(mention, candidates, d));
+		}
+		Mention ref = d.refGraph().getFinalResolutions().get(mention);
+		if(ref != null){
+			reportResolution("pronoun", mention,ref);
+		}
+	}
+
 	public static void resolvePronoun(Mention mention, Document d) {
 		U.pl("trying to resolve as a pronoun");
 		
 		ArrayList<Mention> candidates = new ArrayList<Mention>();
-	
 		for (Mention cand : d.prevMentions(mention)) {
 			boolean match = Types.checkPronominalMatch(mention, cand);
 			
