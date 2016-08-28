@@ -1,6 +1,5 @@
 package MedArkRef;
 
-import MetamapStuff.MetaMapWrapper;
 import arkref.analysis.*;
 import arkref.data.Document;
 import arkref.data.Mention;
@@ -11,51 +10,45 @@ import edu.stanford.nlp.trees.tregex.TregexPattern;
 import edu.stanford.nlp.trees.tregex.tsurgeon.Tsurgeon;
 import edu.stanford.nlp.trees.tregex.tsurgeon.TsurgeonPattern;
 import edu.stanford.nlp.util.Pair;
-import gov.nih.nlm.nls.metamap.*;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class NPClarification {
-	static MetaMapWrapper mmw;
 	public NPClarification(){
 		ARKref.Opts.propertiesFile = GlobalProperties.getProperties().getProperty("propertiesFilePath");
 	}
 
-
-	
-	public void resolveCoreference(List<Tree> origdoc){
-
-		List<Tree> trees = new ArrayList<Tree>();
-		List<String> entityStrings = new ArrayList<String>();
-		List<String> mmStrings = new ArrayList<>();
-		int p = 0;
-		int totP = origdoc.size();
-
-		//STEP 1: label all NP's with their classifications
-		for(Tree t: origdoc){
-			p++;
-			Document.addNPsAbovePossessivePronouns(t);
-			Document.addInternalNPStructureForRoleAppositives(t);
-			trees.add(t);
-			entityStrings.add(convertSupersensesToEntityString(t, SuperSenseWrapper.getInstance().annotateSentenceWithSupersenses(t)));
-		}
-
-
-		for(int i=0; i<entityStrings.size();i++){
-			System.out.println(trees.get(i).toString());
-			System.out.println(entityStrings.get(i));
-		}
-		doc = new Document(trees, entityStrings, mmw);
-		FindMentions.go(doc);
-		Resolve.go(doc);
-		RefsToEntities.go(doc);
-		mmw.disconnect();
-	}
+//	public void resolveCoreference(List<Tree> origdoc){
+//		List<Tree> trees = new ArrayList<Tree>();
+//		List<String> entityStrings = new ArrayList<String>();
+//		int p = 0;
+//		int totP = origdoc.size();
+//
+//		//STEP 1: label all NP's with their classifications
+//		for(Tree t: origdoc){
+//			p++;
+//			Document.addNPsAbovePossessivePronouns(t);
+//			Document.addInternalNPStructureForRoleAppositives(t);
+//			trees.add(t);
+//			entityStrings.add(convertSupersensesToEntityString(t, SuperSenseWrapper.getInstance().annotateSentenceWithSupersenses(t)));
+//		}
+//
+//
+//		for(int i=0; i<entityStrings.size();i++){
+//			System.out.println(trees.get(i).toString());
+//			System.out.println(entityStrings.get(i));
+//		}
+//		System.out.println("making document..");
+//		doc = new Document(trees, entityStrings);
+//		System.out.println("finding mentions..");
+//		FindMentions.go(doc,mmw);
+//		System.out.println("resolving coreferences..");
+//		Resolve.go(doc);
+//		System.out.println("refs to entities..");
+//		RefsToEntities.go(doc);
+//	}
 
 	
 	private String convertSupersensesToEntityString(Tree t, List<String> supersenses) {
@@ -558,7 +551,7 @@ public class NPClarification {
 	 */
 	public static void main(String[] args) {
 		MedArkFilter.initialize();
-		mmw = new MetaMapWrapper("104.197.31.127");
+	//	mmw = new MetaMapWrapper("104.197.31.127");
 		String input = "Tuberculosis is terrible. This disease killed a lot of people.";
 		makeNPClarify(input);
 //		try{
@@ -621,7 +614,7 @@ public class NPClarification {
 		}
 
 		NPClarification npc = new NPClarification();
-		npc.resolveCoreference(trees);
+		//npc.resolveCoreference(trees);
 
 		//Normally, we would perform some transformations right here,
 		//but for this class we just print out clarified versions of the original sentences.

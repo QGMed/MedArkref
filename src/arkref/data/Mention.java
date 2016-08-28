@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import MedArkRef.MedArkFilter;
-import MetamapStuff.MetaMapWrapper;
 import arkref.ace.AceDocument;
 import arkref.analysis.Types;
 import arkref.parsestuff.AnalysisUtilities;
@@ -28,20 +27,21 @@ public class Mention implements Serializable{
 	public String medNPSem = "null";
 	public String nodeText = "null";
 	
-	public Mention(int id, Sentence sentence, Tree node, MetaMapWrapper mmw) {
+	public Mention(int id, Sentence sentence, Tree node, MetaMapApi api,String ip) {
 		this.id=id;
 		this.sentence=sentence;
 		this.node=node;
 
 		nodeText = node.yield().toString();
-		getMMSense(mmw,nodeText);
+		getMMSense(api,nodeText, ip);
 	}
 
 
-	public void getMMSense(MetaMapWrapper mmw, String input) {
+	public void getMMSense(MetaMapApi api, String input,String ip) {
+		String options = api.getOptions();
 		input = input.replaceAll("\\.", "");
 		try {
-			List<Result> results = mmw.parseString(input);
+			List<Result> results = api.processCitationsFromString(input);
 			for (Result result : results) {
 				for (Utterance utterance : result.getUtteranceList()) {
 					for (PCM pcm : utterance.getPCMList()) {
@@ -66,6 +66,9 @@ public class Mention implements Serializable{
 			}
 		}catch(Exception e){
 			System.out.println("MM Rejected in correferencer");
+			api.disconnect();
+			api = new MetaMapApiImpl(ip);
+			api.setOptions(options);
 			//return input;
 		}
 		//return outputString;

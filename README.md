@@ -1,14 +1,4 @@
-MedARKref
-
-MedARKref extends the ARKref correference system to include medical pronoun resolutions.
-Ex:	Tuberculosis is terrible. This disease killed a lot of people.
-	The system now recognizes "disease" as a NP to be replaced by "Turberculosis".
-	
-The new system uses metamap to label the semantics of the NPs.
-We have a included a textfile in "config/MedArkConfig.config" to map certain replacable concepts(CUI's) to be replaced.  
-
-
-Below is the standard arkref readme.
+ARKref
 ======
 * Website: http://www.ark.cs.cmu.edu/ARKref/
 * Mike Heilman (http://www.cs.cmu.edu/~mheilman/)

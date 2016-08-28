@@ -12,13 +12,14 @@ import arkref.parsestuff.U;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
+import gov.nih.nlm.nls.metamap.MetaMapApi;
 
 public class FindMentions {
-	public static void go(Document d) {
+	public static void go(Document d, MetaMapApi api, String ip) {
 		U.pl("\n***  Find Mentions  ***\n");
 		for (Sentence s : d.sentences()){
 			for(Tree match: findMentionNodes(s.rootNode())){
-				d.newMention(s, match);
+				d.newMention(s, match, api, ip);
 			}
 		}
 	}
@@ -37,7 +38,7 @@ public class FindMentions {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		Document d = Document.loadFiles("/d/arkref/data/lcross");
-		FindMentions.go(d);
+		//Document d = Document.loadFiles("/d/arkref/data/lcross");
+		//FindMentions.go(d);
 	}
 }

@@ -3,11 +3,7 @@ package arkref.data;
 import java.util.*;
 import java.io.*;
 
-import MetamapStuff.MetaMapWrapper;
-import com.aliasi.util.Math;
-
 import arkref.analysis.ARKref;
-import arkref.analysis.FindMentions;
 import arkref.analysis.Preprocess;
 import arkref.parsestuff.AlignedSub;
 import arkref.parsestuff.AnalysisUtilities;
@@ -21,8 +17,8 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeFactory;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
-import edu.stanford.nlp.util.IntPair;
 import edu.stanford.nlp.util.StringUtils;
+import gov.nih.nlm.nls.metamap.MetaMapApi;
 
 public class Document implements Serializable{
 	private static final long serialVersionUID = 55739275200700333L;
@@ -32,7 +28,6 @@ public class Document implements Serializable{
 	protected RefGraph refGraph;
 	protected Tree docTree = null; //tree that includes all the trees for the sentences, in order, under a dummy node
 	protected EntityGraph entGraph;
-	public MetaMapWrapper mmw;
 
 
 	public Document() {
@@ -43,12 +38,11 @@ public class Document implements Serializable{
 	}
 
 	
-	public Document(List<Tree> trees, List<String> entityStrings, MetaMapWrapper mmw) {
+	public Document(List<Tree> trees, List<String> entityStrings) {
 		sentences = new ArrayList<Sentence>();
 		mentions = new ArrayList<Mention>();
 		node2mention = new NodeHashMap<Mention>();
 		refGraph = new RefGraph();
-		this.mmw = mmw;
 
 		for(int i=0; i<trees.size(); i++){
 			Sentence sent = new Sentence(i);
@@ -67,8 +61,7 @@ public class Document implements Serializable{
 	 * if there is no mention for the given node, this will walk up the tree 
 	 * to try to find one, as in H&K EMNLP 09.   Such a method is necessary
 	 * because the test data coref labels may not match up with constituents exactly
-	 * 
-	 * @param s
+	 *
 	 * @param node
 	 * @return
 	 */
@@ -395,8 +388,8 @@ public class Document implements Serializable{
 		return entGraph;
 	}
 
-	public Mention newMention(Sentence s, Tree subtree) {
-		Mention mention = new Mention(mentions.size()+1, s, subtree,mmw);
+	public Mention newMention(Sentence s, Tree subtree, MetaMapApi api, String ip) {
+		Mention mention = new Mention(mentions.size()+1, s, subtree,api, ip);
 		mentions.add(mention);
 		if (subtree != null)
 			node2mention.put(s, subtree, mention);
